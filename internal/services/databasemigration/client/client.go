@@ -8,12 +8,14 @@ import (
 
 	"github.com/hashicorp/go-azure-sdk/resource-manager/datamigration/2021-06-30/projectresource"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/datamigration/2021-06-30/serviceresource"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/datamigration/2021-06-30/taskresource"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/common"
 )
 
 type Client struct {
 	ServicesClient *serviceresource.ServiceResourceClient
 	ProjectsClient *projectresource.ProjectResourceClient
+	TasksClient    *taskresource.TaskResourceClient
 }
 
 func NewClient(o *common.ClientOptions) (*Client, error) {
@@ -29,8 +31,15 @@ func NewClient(o *common.ClientOptions) (*Client, error) {
 	}
 	o.Configure(projectsClient.Client, o.Authorizers.ResourceManager)
 
+	tasksClient, err := taskresource.NewTaskResourceClientWithBaseURI(o.Environment.ResourceManager)
+	if err != nil {
+		return nil, fmt.Errorf("building TasksClient client: %+v", err)
+	}
+	o.Configure(tasksClient.Client, o.Authorizers.ResourceManager)
+
 	return &Client{
 		ServicesClient: servicesClient,
 		ProjectsClient: projectsClient,
+		TasksClient:    tasksClient,
 	}, nil
 }
